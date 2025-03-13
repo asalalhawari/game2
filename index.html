@@ -414,6 +414,12 @@
             margin: 0 5px;
         }
 
+        /* Buttons container for game start */
+        .start-buttons {
+            display: flex;
+            gap: 15px;
+        }
+
         /* Responsive Styles */
         @media (max-width: 768px) {
             .memory-board {
@@ -435,6 +441,10 @@
             
             .level-complete p, .game-complete p {
                 font-size: 1.3rem;
+            }
+            
+            .start-buttons {
+                flex-direction: column;
             }
         }
 
@@ -609,7 +619,7 @@
             <h1>لعبة ميموري ماتش رمضانية <span class="ramadan-icon">🌙</span><span class="ramadan-icon">✨</span></h1>
         </div>
 
-        <div class="level-indicator">
+        <div class="level-indicator" id="level-indicator">
             <div class="level-dot active" data-level="1"></div>
             <div class="level-dot" data-level="2"></div>
             <div class="level-dot" data-level="3"></div>
@@ -655,20 +665,27 @@
 
     <div class="game-start" id="game-start">
         <h2>لعبة ميموري ماتش رمضانية <span class="ramadan-icon">🌙</span></h2>
-        <p>مرحباً بك في لعبة الذاكرة الرمضانية! اختبر ذاكرتك في ثلاث مراحل متزايدة الصعوبة. كل مرحلة تتطلب تركيزاً أكبر وذاكرة أقوى!</p>
+        <p>مرحباً بك في لعبة الذاكرة الرمضانية! اختبر ذاكرتك في مراحل متزايدة الصعوبة. كل مرحلة تتطلب تركيزاً أكبر وذاكرة أقوى!</p>
         <div style="margin-bottom: 20px;">
             <p><span class="level-badge">المستوى 1</span> 4 أزواج من البطاقات</p>
             <p><span class="level-badge">المستوى 2</span> 6 أزواج من البطاقات</p>
             <p><span class="level-badge">المستوى 3</span> 8 أزواج من البطاقات</p>
+            <p><span class="level-badge">الوضع اللانهائي</span> مستويات متزايدة الصعوبة بلا نهاية!</p>
         </div>
-        <button id="start-game-btn">ابدأ اللعبة</button>
+        <div class="start-buttons">
+            <button id="start-game-btn">ابدأ اللعبة (3 مستويات)</button>
+            <button id="start-infinite-btn">الوضع اللانهائي</button>
+        </div>
     </div>
 
     <div class="game-complete" id="game-complete">
         <h2>تهانينا! <span class="ramadan-icon">🎉</span></h2>
         <p>لقد أكملت جميع المستويات بنجاح!</p>
         <p id="final-score">مجموع النقاط: <span>0</span></p>
-        <button id="play-again-btn">العب مرة أخرى</button>
+        <div style="display: flex; gap: 15px;">
+            <button id="play-again-btn">العب مرة أخرى</button>
+            <button id="try-infinite-btn">جرب الوضع اللانهائي</button>
+        </div>
     </div>
 
     <script>
@@ -686,12 +703,14 @@
             const levelCompleteScore = document.getElementById('level-complete-score').querySelector('span');
             const levelCompleteTime = document.getElementById('level-complete-time').querySelector('span');
             const nextLevelBtn = document.getElementById('next-level-btn');
-            const levelDots = document.querySelectorAll('.level-dot');
+            const levelIndicator = document.getElementById('level-indicator');
             const gameStart = document.getElementById('game-start');
             const startGameBtn = document.getElementById('start-game-btn');
+            const startInfiniteBtn = document.getElementById('start-infinite-btn');
             const gameComplete = document.getElementById('game-complete');
             const finalScore = document.getElementById('final-score').querySelector('span');
             const playAgainBtn = document.getElementById('play-again-btn');
+            const tryInfiniteBtn = document.getElementById('try-infinite-btn');
 
             // Game variables
             let currentLevel = 1;
@@ -704,10 +723,12 @@
             let gameActive = false;
             let canFlip = true;
             let levelScores = [0, 0, 0];
+            let infiniteMode = false;
 
             // Ramadan-themed emojis for cards
             const cardSymbols = [
-                '🌙', '🕌', '🪔', '📿', '🍜', '🧆', '🥘', '☪️', '🌟', '🍇', '🧉', '🕋'
+                '🌙', '🕌', '🪔', '📿', '🍜', '🧆', '🥘', '☪️', '🌟', '🍇', '🧉', '🕋',
+                '🍽️', '🧿', '🌴', '🏮', '🌹', '🍊', '🍯', '🧃', '🥮', '🍬', '🍡', '🍦'
             ];
 
             // Level configurations
@@ -732,34 +753,69 @@
                 }
             };
 
+            // Function to get level config for any level (including infinite mode)
+            function getLevelConfig(level) {
+                if (level <= 3) {
+                    return levels[level];
+                } else {
+                    // For levels beyond 3, increase difficulty
+                    const baseTimePerPair = 7; // seconds per pair
+                    const pairs = Math.min(12 + Math.floor((level - 3) / 2), 24); // Max 24 pairs
+                    const columns = Math.min(6, Math.ceil(Math.sqrt(pairs * 2)));
+                    const timeLimit = pairs * baseTimePerPair;
+                    const flipDelay = Math.max(300, 600 - (level - 3) * 50); // Min 300ms delay
+                    
+                    return { pairs, columns, timeLimit, flipDelay };
+                }
+            }
+
             // Adjust grid columns based on screen size and orientation
             function adjustGridColumns() {
                 const width = window.innerWidth;
                 const height = window.innerHeight;
                 const isLandscape = width > height;
                 
-                // For each level, adjust the columns based on screen size and orientation
+                const config = getLevelConfig(currentLevel);
+                let columns = config.columns;
+                
                 if (width <= 400) {
-                    levels[1].columns = 2;
-                    levels[2].columns = 3;
-                    levels[3].columns = 4;
+                    columns = Math.min(columns, 2);
                 } else if (width <= 600) {
-                    levels[1].columns = 3;
-                    levels[2].columns = 3;
-                    levels[3].columns = 4;
+                    columns = Math.min(columns, 3);
                 } else if (isLandscape && height <= 500) {
-                    levels[1].columns = 4;
-                    levels[2].columns = 6;
-                    levels[3].columns = 8;
-                } else {
-                    levels[1].columns = 4;
-                    levels[2].columns = 4;
-                    levels[3].columns = 4;
+                    columns = Math.min(columns, 8);
                 }
                 
                 // If game is active, update the board
                 if (gameActive) {
-                    memoryBoard.style.gridTemplateColumns = `repeat(${levels[currentLevel].columns}, 1fr)`;
+                    memoryBoard.style.gridTemplateColumns = `repeat(${columns}, 1fr)`;
+                }
+            }
+
+            // Update level dots
+            function updateLevelDots(level) {
+                // Clear existing dots
+                levelIndicator.innerHTML = '';
+                
+                // For standard mode, show 3 dots
+                if (!infiniteMode) {
+                    for (let i = 1; i <= 3; i++) {
+                        const dot = document.createElement('div');
+                        dot.className = `level-dot ${i === level ? 'active' : ''}`;
+                        dot.setAttribute('data-level', i);
+                        levelIndicator.appendChild(dot);
+                    }
+                } else {
+                    // For infinite mode, show dots based on current level
+                    // Always show at least 3 dots
+                    const dotsToShow = Math.max(3, level);
+                    
+                    for (let i = 1; i <= dotsToShow; i++) {
+                        const dot = document.createElement('div');
+                        dot.className = `level-dot ${i === level ? 'active' : ''}`;
+                        dot.setAttribute('data-level', i);
+                        levelIndicator.appendChild(dot);
+                    }
                 }
             }
 
@@ -769,9 +825,27 @@
             // Initial adjustment
             adjustGridColumns();
 
-            // Start game button event listener
+            // Start game button event listeners
             startGameBtn.addEventListener('click', () => {
                 gameStart.style.display = 'none';
+                infiniteMode = false;
+                initGame(currentLevel);
+            });
+            
+            startInfiniteBtn.addEventListener('click', () => {
+                gameStart.style.display = 'none';
+                infiniteMode = true;
+                initGame(currentLevel);
+            });
+
+            // Try infinite mode button
+            tryInfiniteBtn.addEventListener('click', () => {
+                gameComplete.classList.remove('show');
+                infiniteMode = true;
+                currentLevel = 1;
+                score = 0;
+                scoreDisplay.textContent = score;
+                levelScores = [0, 0, 0];
                 initGame(currentLevel);
             });
 
@@ -788,11 +862,12 @@
                 updateLevelDots(level);
                 
                 // Set total pairs based on level
-                totalPairs = levels[level].pairs;
+                const config = getLevelConfig(level);
+                totalPairs = config.pairs;
                 
                 // Reset timer
                 clearInterval(timerInterval);
-                timer = levels[level].timeLimit;
+                timer = config.timeLimit;
                 timeDisplay.textContent = timer;
                 
                 // Reset progress bar
@@ -814,12 +889,13 @@
             // Create shuffled cards for a specific level
             function createShuffledCards(level) {
                 // Get number of pairs for this level
-                const pairsCount = levels[level].pairs;
+                const config = getLevelConfig(level);
+                const pairsCount = config.pairs;
                 
                 // Create pairs of cards
                 let cards = [];
                 for (let i = 0; i < pairsCount; i++) {
-                    const symbol = cardSymbols[i];
+                    const symbol = cardSymbols[i % cardSymbols.length];
                     cards.push({ symbol, matched: false });
                     cards.push({ symbol, matched: false });
                 }
@@ -838,7 +914,8 @@
                 memoryBoard.innerHTML = '';
                 
                 // Set grid columns based on level and screen size
-                memoryBoard.style.gridTemplateColumns = `repeat(${levels[level].columns}, 1fr)`;
+                const config = getLevelConfig(level);
+                memoryBoard.style.gridTemplateColumns = `repeat(${config.columns}, 1fr)`;
                 
                 cards.forEach((card, index) => {
                     const cardElement = document.createElement('div');
@@ -919,10 +996,16 @@
                                 clearInterval(timerInterval);
                                 
                                 // Store level score
-                                levelScores[currentLevel - 1] = score - levelScores.slice(0, currentLevel - 1).reduce((a, b) => a + b, 0);
+                                if (currentLevel <= 3) {
+                                    levelScores[currentLevel - 1] = score - levelScores.slice(0, currentLevel - 1).reduce((a, b) => a + b, 0);
+                                }
                                 
                                 // Show level complete screen
-                                levelCompleteMessage.textContent = `لقد أكملت المستوى ${currentLevel}!`;
+                                if (infiniteMode) {
+                                    levelCompleteMessage.textContent = `لقد أكملت المستوى ${currentLevel}!`;
+                                } else {
+                                    levelCompleteMessage.textContent = `لقد أكملت المستوى ${currentLevel} من 3!`;
+                                }
                                 levelCompleteScore.textContent = score;
                                 levelCompleteTime.textContent = timer;
                                 
@@ -946,7 +1029,7 @@
                             // Reset flipped cards
                             flippedCards = [];
                             canFlip = true;
-                        }, levels[currentLevel].flipDelay); // Use level-specific flip delay
+                        }, getLevelConfig(currentLevel).flipDelay); // Use level-specific flip delay
                     }
                 }
             }
@@ -954,7 +1037,8 @@
             // Start timer
             function startTimer() {
                 clearInterval(timerInterval);
-                timer = levels[currentLevel].timeLimit;
+                const config = getLevelConfig(currentLevel);
+                timer = config.timeLimit;
                 timeDisplay.textContent = timer;
                 
                 timerInterval = setInterval(() => {
@@ -969,30 +1053,19 @@
                 }, 1000);
             }
 
-            // Update level dots
-            function updateLevelDots(level) {
-                levelDots.forEach(dot => {
-                    const dotLevel = parseInt(dot.getAttribute('data-level'));
-                    if (dotLevel === level) {
-                        dot.classList.add('active');
-                    } else {
-                        dot.classList.remove('active');
-                    }
-                });
-            }
-
             // Next level button
             nextLevelBtn.addEventListener('click', () => {
                 levelComplete.classList.remove('show');
                 
-                if (currentLevel < 3) {
-                    currentLevel++;
-                    initGame(currentLevel);
-                } else {
-                    // Game completed
+                if (!infiniteMode && currentLevel >= 3) {
+                    // Game completed (non-infinite mode)
                     finalScore.textContent = score;
                     gameComplete.classList.add('show');
                     createConfetti();
+                } else {
+                    // Next level
+                    currentLevel++;
+                    initGame(currentLevel);
                 }
             });
 
