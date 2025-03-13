@@ -46,7 +46,7 @@
         }
 
         .header {
-            margin-bottom: 30px;
+            margin-bottom: 20px;
         }
 
         h1 {
@@ -277,6 +277,7 @@
             opacity: 0;
             pointer-events: none;
             transition: opacity 0.5s ease;
+            padding: 20px;
         }
 
         .level-complete.show {
@@ -335,6 +336,7 @@
             align-items: center;
             justify-content: center;
             z-index: 1000;
+            padding: 20px;
         }
 
         .game-start h2 {
@@ -374,6 +376,7 @@
             opacity: 0;
             pointer-events: none;
             transition: opacity 0.5s ease;
+            padding: 20px;
         }
 
         .game-complete.show {
@@ -411,18 +414,51 @@
             margin: 0 5px;
         }
 
+        /* Responsive Styles */
+        @media (max-width: 768px) {
+            .memory-board {
+                grid-template-columns: repeat(4, 1fr);
+                grid-gap: 8px;
+            }
+            
+            .card {
+                height: 90px;
+            }
+            
+            h1 {
+                font-size: 2.2rem;
+            }
+            
+            .level-complete h2, .game-complete h2 {
+                font-size: 2.5rem;
+            }
+            
+            .level-complete p, .game-complete p {
+                font-size: 1.3rem;
+            }
+        }
+
         @media (max-width: 600px) {
             .memory-board {
                 grid-template-columns: repeat(3, 1fr);
+                grid-gap: 6px;
             }
             
             .card {
                 height: 80px;
                 font-size: 2rem;
             }
+            
+            .card-front {
+                font-size: 1.8rem;
+            }
+            
+            .card-back {
+                font-size: 2.2rem;
+            }
 
             h1 {
-                font-size: 2rem;
+                font-size: 1.8rem;
             }
             
             .game-info {
@@ -435,6 +471,132 @@
                 justify-content: space-between;
                 width: 100%;
             }
+            
+            .status {
+                font-size: 1.2rem;
+                height: auto;
+                min-height: 30px;
+            }
+            
+            .level-complete h2, .game-complete h2, .game-start h2 {
+                font-size: 2rem;
+            }
+            
+            .level-complete p, .game-complete p, .game-start p {
+                font-size: 1.1rem;
+            }
+            
+            button {
+                padding: 8px 16px;
+                font-size: 0.9rem;
+            }
+            
+            .level-complete button, .game-complete button, .game-start button {
+                font-size: 1rem;
+                padding: 12px 24px;
+            }
+        }
+
+        @media (max-width: 400px) {
+            .memory-board {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .card {
+                height: 70px;
+            }
+            
+            h1 {
+                font-size: 1.5rem;
+            }
+            
+            .ramadan-icon {
+                font-size: 1.5rem;
+            }
+            
+            .info-value {
+                font-size: 1.2rem;
+            }
+            
+            .info-label {
+                font-size: 0.9rem;
+            }
+            
+            .level-dot {
+                width: 12px;
+                height: 12px;
+            }
+        }
+
+        /* Landscape mode for mobile */
+        @media (max-height: 500px) and (orientation: landscape) {
+            .container {
+                padding-top: 10px;
+            }
+            
+            .header {
+                margin-bottom: 10px;
+            }
+            
+            .memory-board {
+                grid-template-columns: repeat(6, 1fr);
+                grid-gap: 5px;
+            }
+            
+            .card {
+                height: 60px;
+            }
+            
+            .game-info {
+                padding: 8px;
+                margin-bottom: 10px;
+            }
+            
+            .progress-container {
+                margin-bottom: 10px;
+            }
+            
+            .status {
+                margin-bottom: 10px;
+            }
+            
+            .level-indicator {
+                margin-bottom: 10px;
+            }
+        }
+
+        /* For very large screens */
+        @media (min-width: 1200px) {
+            .container {
+                max-width: 1000px;
+            }
+            
+            .card {
+                height: 120px;
+            }
+            
+            .card-back {
+                font-size: 3rem;
+            }
+        }
+
+        /* Touch device optimizations */
+        @media (hover: none) {
+            .card:hover {
+                transform: none;
+                border-color: rgba(255, 255, 255, 0.3);
+            }
+            
+            button:hover {
+                transform: none;
+                box-shadow: none;
+                background-color: #1e3a8a;
+            }
+            
+            button:active {
+                transform: translateY(2px);
+                background-color: #2563eb;
+            }
         }
     </style>
 </head>
@@ -444,7 +606,7 @@
 
     <div class="container">
         <div class="header">
-            <h1>Ramadan 🌙 Memory Match Game<span class="ramadan-icon">🌙</span><span class="ramadan-icon">✨</span></h1>
+            <h1>لعبة ميموري ماتش رمضانية <span class="ramadan-icon">🌙</span><span class="ramadan-icon">✨</span></h1>
         </div>
 
         <div class="level-indicator">
@@ -492,7 +654,7 @@
     </div>
 
     <div class="game-start" id="game-start">
-        <h2>Ramadan 🌙 Memory Match Game<span class="ramadan-icon">🌙</span></h2>
+        <h2>لعبة ميموري ماتش رمضانية <span class="ramadan-icon">🌙</span></h2>
         <p>مرحباً بك في لعبة الذاكرة الرمضانية! اختبر ذاكرتك في ثلاث مراحل متزايدة الصعوبة. كل مرحلة تتطلب تركيزاً أكبر وذاكرة أقوى!</p>
         <div style="margin-bottom: 20px;">
             <p><span class="level-badge">المستوى 1</span> 4 أزواج من البطاقات</p>
@@ -570,6 +732,43 @@
                 }
             };
 
+            // Adjust grid columns based on screen size and orientation
+            function adjustGridColumns() {
+                const width = window.innerWidth;
+                const height = window.innerHeight;
+                const isLandscape = width > height;
+                
+                // For each level, adjust the columns based on screen size and orientation
+                if (width <= 400) {
+                    levels[1].columns = 2;
+                    levels[2].columns = 3;
+                    levels[3].columns = 4;
+                } else if (width <= 600) {
+                    levels[1].columns = 3;
+                    levels[2].columns = 3;
+                    levels[3].columns = 4;
+                } else if (isLandscape && height <= 500) {
+                    levels[1].columns = 4;
+                    levels[2].columns = 6;
+                    levels[3].columns = 8;
+                } else {
+                    levels[1].columns = 4;
+                    levels[2].columns = 4;
+                    levels[3].columns = 4;
+                }
+                
+                // If game is active, update the board
+                if (gameActive) {
+                    memoryBoard.style.gridTemplateColumns = `repeat(${levels[currentLevel].columns}, 1fr)`;
+                }
+            }
+
+            // Listen for resize events to adjust the grid
+            window.addEventListener('resize', adjustGridColumns);
+            
+            // Initial adjustment
+            adjustGridColumns();
+
             // Start game button event listener
             startGameBtn.addEventListener('click', () => {
                 gameStart.style.display = 'none';
@@ -638,7 +837,7 @@
             function createMemoryBoard(cards, level) {
                 memoryBoard.innerHTML = '';
                 
-                // Set grid columns based on level
+                // Set grid columns based on level and screen size
                 memoryBoard.style.gridTemplateColumns = `repeat(${levels[level].columns}, 1fr)`;
                 
                 cards.forEach((card, index) => {
@@ -843,6 +1042,74 @@
                     };
                 }
             }
+            
+            // Handle touch events better for mobile devices
+            if ('ontouchstart' in window) {
+                document.querySelectorAll('button').forEach(button => {
+                    button.addEventListener('touchstart', function() {
+                        this.style.transform = 'scale(0.95)';
+                    });
+                    
+                    button.addEventListener('touchend', function() {
+                        this.style.transform = 'scale(1)';
+                    });
+                });
+            }
+            
+            // Add share functionality
+            function shareGame() {
+                if (navigator.share) {
+                    navigator.share({
+                        title: 'لعبة ميموري ماتش رمضانية',
+                        text: 'جربت هذه اللعبة الرمضانية الرائعة! تعال والعب معي!',
+                        url: window.location.href
+                    })
+                    .catch(error => console.log('Error sharing:', error));
+                }
+            }
+            
+            // Add share button if sharing is supported
+            if (navigator.share) {
+                const shareBtn = document.createElement('button');
+                shareBtn.textContent = 'مشاركة اللعبة';
+                shareBtn.style.marginLeft = '10px';
+                shareBtn.addEventListener('click', shareGame);
+                
+                document.querySelector('.controls').appendChild(shareBtn);
+            }
+            
+            // Add fullscreen support
+            function toggleFullScreen() {
+                if (!document.fullscreenElement) {
+                    document.documentElement.requestFullscreen().catch(err => {
+                        console.log(`Error attempting to enable full-screen mode: ${err.message}`);
+                    });
+                } else {
+                    if (document.exitFullscreen) {
+                        document.exitFullscreen();
+                    }
+                }
+            }
+            
+            // Add fullscreen button
+            const fullscreenBtn = document.createElement('button');
+            fullscreenBtn.textContent = 'ملء الشاشة';
+            fullscreenBtn.style.marginLeft = '10px';
+            fullscreenBtn.addEventListener('click', toggleFullScreen);
+            
+            document.querySelector('.controls').appendChild(fullscreenBtn);
+            
+            // Prevent zooming on double tap for touch devices
+            document.addEventListener('touchstart', function(event) {
+                if (event.touches.length > 1) {
+                    event.preventDefault();
+                }
+            }, { passive: false });
+            
+            // Prevent pinch zoom
+            document.addEventListener('gesturestart', function(event) {
+                event.preventDefault();
+            });
         });
     </script>
 </body>
