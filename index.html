@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لعبة ميموري ماتش رمضانية</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Naskh Arabic', serif;
+            background-color: #0a1f3c;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Islamic Pattern Background */
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill='%23ffffff' fill-opacity='0.05' d='M96.5,40.5c-0.5-1-2.5-2-2.5-2s1.5-2,1.5-3s-1.5-2-1.5-2s1-1.5,0.5-2.5s-2-1-2-1s0.5-2-0.5-2.5s-2,0-2,0s0-2-1-2.5 s-2,0.5-2,0.5s-0.5-2-1.5-2s-1.5,1-1.5,1s-1-1.5-2-1.5s-1.5,1.5-1.5,1.5s-1.5-1-2.5-0.5s-1,2-1,2s-2-0.5-2.5,0.5s0,2,0,2s-2,0.5-2.5,1.5 s0.5,2,0.5,2s-1.5,1-2,2s0.5,2,0.5,2s-2,1.5-2,2.5s1,1.5,1,1.5s-1.5,2-1,3s2,1,2,1s-1,2-0.5,2.5s2,0.5,2,0.5s-0.5,2,0.5,2.5s2-0.5,2-0.5 s0,2,1,2.5s2-0.5,2-0.5s0.5,2,1.5,2s1.5-1,1.5-1s1,1.5,2,1.5s1.5-1.5,1.5-1.5s1.5,1,2.5,0.5s1-2,1-2s2,0.5,2.5-0.5s0-2,0-2s2-0.5,2.5-1.5 s-0.5-2-0.5-2s1.5-1,2-2s-0.5-2-0.5-2s2-1.5,2-2.5S96.5,40.5,96.5,40.5z'/%3E%3C/svg%3E");
+            opacity: 0.1;
+            z-index: -1;
+        }
+
+        .container {
+            max-width: 800px;
+            width: 100%;
+            text-align: center;
+        }
+
+        .header {
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            color: #ffffff;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .ramadan-icon {
+            font-size: 2rem;
+            margin: 0 5px;
+        }
+
+        .level-indicator {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .level-dot {
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.3);
+            margin: 0 5px;
+            transition: all 0.3s ease;
+        }
+
+        .level-dot.active {
+            background-color: #ffffff;
+            transform: scale(1.2);
+        }
+
+        .game-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .info-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .info-label {
+            font-size: 1rem;
+            margin-bottom: 5px;
+            color: #ffffff;
+            opacity: 0.8;
+        }
+
+        .info-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: white;
+        }
+
+        .memory-board {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .card {
+            background-color: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            perspective: 1000px;
+        }
+
+        .card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+        }
+
+        .card.flipped .card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .card-front, .card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+        }
+
+        .card-front {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            font-size: 2rem;
+        }
+
+        .card-back {
+            background-color: rgba(255, 255, 255, 0.05);
+            transform: rotateY(180deg);
+            font-size: 2.5rem;
+        }
+
+        .card:hover {
+            transform: scale(1.03);
+            border-color: #ffffff;
+        }
+
+        .status {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            height: 30px;
+            color: #ffffff;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        button {
+            background-color: #1e3a8a;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 30px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Noto Naskh Arabic', serif;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        button:hover {
+            background-color: #2563eb;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: #ffffff;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        /* Lantern Animation */
+        .lantern {
+            position: absolute;
+            top: -50px;
+            font-size: 3rem;
+            animation: swing 3s infinite ease-in-out;
+            color: #ffffff;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+
+        .lantern:nth-child(1) {
+            left: 10%;
+            animation-delay: 0s;
+        }
+
+        .lantern:nth-child(2) {
+            left: 90%;
+            animation-delay: 0.5s;
+        }
+
+        @keyframes swing {
+            0%, 100% {
+                transform: translateY(0) rotate(5deg);
+            }
+            50% {
+                transform: translateY(10px) rotate(-5deg);
+            }
+        }
+
+        /* Level Complete Animation */
+        @keyframes celebrate {
+            0% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.2);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .celebrate {
+            animation: celebrate 0.5s ease-in-out;
+        }
+
+        .level-complete {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(10, 31, 60, 0.9);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+        }
+
+        .level-complete.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .level-complete h2 {
+            font-size: 3rem;
+            color: #ffffff;
+            margin-bottom: 20px;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .level-complete p {
+            font-size: 1.5rem;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 30px;
+        }
+
+        .level-complete button {
+            font-size: 1.2rem;
+            padding: 15px 30px;
+        }
+
+        .matched {
+            opacity: 0.6;
+            cursor: default;
+        }
+
+        .progress-container {
+            width: 100%;
+            height: 10px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background-color: #2563eb;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .game-start {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(10, 31, 60, 0.95);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .game-start h2 {
+            font-size: 2.5rem;
+            color: #ffffff;
+            margin-bottom: 20px;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .game-start p {
+            font-size: 1.2rem;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 30px;
+            max-width: 600px;
+            text-align: center;
+            line-height: 1.6;
+        }
+
+        .game-start button {
+            font-size: 1.2rem;
+            padding: 15px 30px;
+            background-color: #2563eb;
+        }
+
+        .game-complete {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(10, 31, 60, 0.95);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+        }
+
+        .game-complete.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .game-complete h2 {
+            font-size: 3rem;
+            color: #ffffff;
+            margin-bottom: 20px;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .game-complete p {
+            font-size: 1.5rem;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .game-complete button {
+            font-size: 1.2rem;
+            padding: 15px 30px;
+            background-color: #2563eb;
+        }
+
+        .level-badge {
+            display: inline-block;
+            background-color: #2563eb;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            margin: 0 5px;
+        }
+
+        @media (max-width: 600px) {
+            .memory-board {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            
+            .card {
+                height: 80px;
+                font-size: 2rem;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .game-info {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .info-item {
+                flex-direction: row;
+                justify-content: space-between;
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="lantern">🪔</div>
+    <div class="lantern">🪔</div>
+
+    <div class="container">
+        <div class="header">
+            <h1>Ramadan 🌙 Memory Match Game<span class="ramadan-icon">🌙</span><span class="ramadan-icon">✨</span></h1>
+        </div>
+
+        <div class="level-indicator">
+            <div class="level-dot active" data-level="1"></div>
+            <div class="level-dot" data-level="2"></div>
+            <div class="level-dot" data-level="3"></div>
+        </div>
+
+        <div class="game-info">
+            <div class="info-item">
+                <div class="info-label">المستوى</div>
+                <div class="info-value" id="level-display">1</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">النقاط</div>
+                <div class="info-value" id="score-display">0</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">الوقت</div>
+                <div class="info-value" id="time-display">0</div>
+            </div>
+        </div>
+
+        <div class="progress-container">
+            <div class="progress-bar" id="progress-bar"></div>
+        </div>
+
+        <div class="status" id="status">ابدأ اللعبة بالضغط على البطاقات</div>
+
+        <div class="memory-board" id="memory-board">
+            <!-- Cards will be generated dynamically -->
+        </div>
+
+        <div class="controls">
+            <button id="restart-game">إعادة اللعبة</button>
+        </div>
+    </div>
+
+    <div class="level-complete" id="level-complete">
+        <h2>أحسنت! <span class="ramadan-icon">🎉</span></h2>
+        <p id="level-complete-message">لقد أكملت المستوى 1!</p>
+        <p id="level-complete-score">النقاط: <span>0</span></p>
+        <p id="level-complete-time">الوقت المتبقي: <span>0</span> ثانية</p>
+        <button id="next-level-btn">المستوى التالي</button>
+    </div>
+
+    <div class="game-start" id="game-start">
+        <h2>Ramadan 🌙 Memory Match Game<span class="ramadan-icon">🌙</span></h2>
+        <p>مرحباً بك في لعبة الذاكرة الرمضانية! اختبر ذاكرتك في ثلاث مراحل متزايدة الصعوبة. كل مرحلة تتطلب تركيزاً أكبر وذاكرة أقوى!</p>
+        <div style="margin-bottom: 20px;">
+            <p><span class="level-badge">المستوى 1</span> 4 أزواج من البطاقات</p>
+            <p><span class="level-badge">المستوى 2</span> 6 أزواج من البطاقات</p>
+            <p><span class="level-badge">المستوى 3</span> 8 أزواج من البطاقات</p>
+        </div>
+        <button id="start-game-btn">ابدأ اللعبة</button>
+    </div>
+
+    <div class="game-complete" id="game-complete">
+        <h2>تهانينا! <span class="ramadan-icon">🎉</span></h2>
+        <p>لقد أكملت جميع المستويات بنجاح!</p>
+        <p id="final-score">مجموع النقاط: <span>0</span></p>
+        <button id="play-again-btn">العب مرة أخرى</button>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // DOM Elements
+            const memoryBoard = document.getElementById('memory-board');
+            const status = document.getElementById('status');
+            const restartGameBtn = document.getElementById('restart-game');
+            const levelDisplay = document.getElementById('level-display');
+            const scoreDisplay = document.getElementById('score-display');
+            const timeDisplay = document.getElementById('time-display');
+            const progressBar = document.getElementById('progress-bar');
+            const levelComplete = document.getElementById('level-complete');
+            const levelCompleteMessage = document.getElementById('level-complete-message');
+            const levelCompleteScore = document.getElementById('level-complete-score').querySelector('span');
+            const levelCompleteTime = document.getElementById('level-complete-time').querySelector('span');
+            const nextLevelBtn = document.getElementById('next-level-btn');
+            const levelDots = document.querySelectorAll('.level-dot');
+            const gameStart = document.getElementById('game-start');
+            const startGameBtn = document.getElementById('start-game-btn');
+            const gameComplete = document.getElementById('game-complete');
+            const finalScore = document.getElementById('final-score').querySelector('span');
+            const playAgainBtn = document.getElementById('play-again-btn');
+
+            // Game variables
+            let currentLevel = 1;
+            let score = 0;
+            let timer = 0;
+            let timerInterval = null;
+            let flippedCards = [];
+            let matchedPairs = 0;
+            let totalPairs = 0;
+            let gameActive = false;
+            let canFlip = true;
+            let levelScores = [0, 0, 0];
+
+            // Ramadan-themed emojis for cards
+            const cardSymbols = [
+                '🌙', '🕌', '🪔', '📿', '🍜', '🧆', '🥘', '☪️', '🌟', '🍇', '🧉', '🕋'
+            ];
+
+            // Level configurations
+            const levels = {
+                1: {
+                    pairs: 4,
+                    columns: 4,
+                    timeLimit: 30,
+                    flipDelay: 1000 // Time in ms before unmatched cards flip back
+                },
+                2: {
+                    pairs: 6,
+                    columns: 4,
+                    timeLimit: 45,
+                    flipDelay: 800 // Faster flip back for level 2
+                },
+                3: {
+                    pairs: 8,
+                    columns: 4,
+                    timeLimit: 60,
+                    flipDelay: 600 // Even faster flip back for level 3
+                }
+            };
+
+            // Start game button event listener
+            startGameBtn.addEventListener('click', () => {
+                gameStart.style.display = 'none';
+                initGame(currentLevel);
+            });
+
+            // Initialize game with specific level
+            function initGame(level) {
+                // Reset game variables
+                flippedCards = [];
+                matchedPairs = 0;
+                gameActive = true;
+                canFlip = true;
+                
+                // Update level display
+                levelDisplay.textContent = level;
+                updateLevelDots(level);
+                
+                // Set total pairs based on level
+                totalPairs = levels[level].pairs;
+                
+                // Reset timer
+                clearInterval(timerInterval);
+                timer = levels[level].timeLimit;
+                timeDisplay.textContent = timer;
+                
+                // Reset progress bar
+                progressBar.style.width = '0%';
+                
+                // Create shuffled cards
+                const cards = createShuffledCards(level);
+                
+                // Create the memory board
+                createMemoryBoard(cards, level);
+                
+                // Start timer
+                startTimer();
+                
+                // Update status
+                status.textContent = 'ابدأ اللعبة بالضغط على البطاقات';
+            }
+
+            // Create shuffled cards for a specific level
+            function createShuffledCards(level) {
+                // Get number of pairs for this level
+                const pairsCount = levels[level].pairs;
+                
+                // Create pairs of cards
+                let cards = [];
+                for (let i = 0; i < pairsCount; i++) {
+                    const symbol = cardSymbols[i];
+                    cards.push({ symbol, matched: false });
+                    cards.push({ symbol, matched: false });
+                }
+                
+                // Shuffle cards
+                for (let i = cards.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [cards[i], cards[j]] = [cards[j], cards[i]];
+                }
+                
+                return cards;
+            }
+
+            // Create the memory board
+            function createMemoryBoard(cards, level) {
+                memoryBoard.innerHTML = '';
+                
+                // Set grid columns based on level
+                memoryBoard.style.gridTemplateColumns = `repeat(${levels[level].columns}, 1fr)`;
+                
+                cards.forEach((card, index) => {
+                    const cardElement = document.createElement('div');
+                    cardElement.className = 'card';
+                    cardElement.setAttribute('data-index', index);
+                    
+                    // Create card inner structure
+                    cardElement.innerHTML = `
+                        <div class="card-inner">
+                            <div class="card-front">?</div>
+                            <div class="card-back">${card.symbol}</div>
+                        </div>
+                    `;
+                    
+                    // Add click event listener
+                    cardElement.addEventListener('click', cardClicked);
+                    
+                    memoryBoard.appendChild(cardElement);
+                });
+            }
+
+            // Handle card click
+            function cardClicked(e) {
+                if (!gameActive || !canFlip) return;
+                
+                const cardElement = e.currentTarget;
+                const index = parseInt(cardElement.getAttribute('data-index'));
+                
+                // Check if card is already matched or flipped
+                if (cardElement.classList.contains('matched') || cardElement.classList.contains('flipped')) {
+                    return;
+                }
+                
+                // Check if already flipped two cards
+                if (flippedCards.length >= 2) {
+                    return;
+                }
+                
+                // Flip the card
+                cardElement.classList.add('flipped');
+                flippedCards.push({ index, element: cardElement });
+                
+                // If this is the second card flipped, check for match
+                if (flippedCards.length === 2) {
+                    canFlip = false;
+                    
+                    const firstCardIndex = flippedCards[0].index;
+                    const secondCardIndex = flippedCards[1].index;
+                    const firstCardElement = flippedCards[0].element;
+                    const secondCardElement = flippedCards[1].element;
+                    
+                    const firstCardSymbol = firstCardElement.querySelector('.card-back').textContent;
+                    const secondCardSymbol = secondCardElement.querySelector('.card-back').textContent;
+                    
+                    if (firstCardSymbol === secondCardSymbol) {
+                        // Match found
+                        setTimeout(() => {
+                            firstCardElement.classList.add('matched');
+                            secondCardElement.classList.add('matched');
+                            
+                            // Update score - more points for higher levels and faster matches
+                            const levelBonus = currentLevel * 10;
+                            const timeBonus = Math.floor(timer / 5);
+                            const matchPoints = levelBonus + timeBonus;
+                            
+                            score += matchPoints;
+                            scoreDisplay.textContent = score;
+                            
+                            // Update matched pairs
+                            matchedPairs++;
+                            
+                            // Update progress bar
+                            const progress = (matchedPairs / totalPairs) * 100;
+                            progressBar.style.width = `${progress}%`;
+                            
+                            // Check for level complete
+                            if (matchedPairs === totalPairs) {
+                                clearInterval(timerInterval);
+                                
+                                // Store level score
+                                levelScores[currentLevel - 1] = score - levelScores.slice(0, currentLevel - 1).reduce((a, b) => a + b, 0);
+                                
+                                // Show level complete screen
+                                levelCompleteMessage.textContent = `لقد أكملت المستوى ${currentLevel}!`;
+                                levelCompleteScore.textContent = score;
+                                levelCompleteTime.textContent = timer;
+                                
+                                // Add a small delay before showing the level complete screen
+                                setTimeout(() => {
+                                    levelComplete.classList.add('show');
+                                    createConfetti();
+                                }, 500);
+                            }
+                            
+                            // Reset flipped cards
+                            flippedCards = [];
+                            canFlip = true;
+                        }, 500);
+                    } else {
+                        // No match
+                        setTimeout(() => {
+                            firstCardElement.classList.remove('flipped');
+                            secondCardElement.classList.remove('flipped');
+                            
+                            // Reset flipped cards
+                            flippedCards = [];
+                            canFlip = true;
+                        }, levels[currentLevel].flipDelay); // Use level-specific flip delay
+                    }
+                }
+            }
+
+            // Start timer
+            function startTimer() {
+                clearInterval(timerInterval);
+                timer = levels[currentLevel].timeLimit;
+                timeDisplay.textContent = timer;
+                
+                timerInterval = setInterval(() => {
+                    timer--;
+                    timeDisplay.textContent = timer;
+                    
+                    if (timer <= 0) {
+                        clearInterval(timerInterval);
+                        gameActive = false;
+                        status.textContent = 'انتهى الوقت! حاول مرة أخرى';
+                    }
+                }, 1000);
+            }
+
+            // Update level dots
+            function updateLevelDots(level) {
+                levelDots.forEach(dot => {
+                    const dotLevel = parseInt(dot.getAttribute('data-level'));
+                    if (dotLevel === level) {
+                        dot.classList.add('active');
+                    } else {
+                        dot.classList.remove('active');
+                    }
+                });
+            }
+
+            // Next level button
+            nextLevelBtn.addEventListener('click', () => {
+                levelComplete.classList.remove('show');
+                
+                if (currentLevel < 3) {
+                    currentLevel++;
+                    initGame(currentLevel);
+                } else {
+                    // Game completed
+                    finalScore.textContent = score;
+                    gameComplete.classList.add('show');
+                    createConfetti();
+                }
+            });
+
+            // Play again button
+            playAgainBtn.addEventListener('click', () => {
+                gameComplete.classList.remove('show');
+                currentLevel = 1;
+                score = 0;
+                scoreDisplay.textContent = score;
+                levelScores = [0, 0, 0];
+                initGame(currentLevel);
+            });
+
+            // Restart game button
+            restartGameBtn.addEventListener('click', () => {
+                initGame(currentLevel);
+            });
+
+            // Create confetti effect
+            function createConfetti() {
+                const colors = ['#ffffff', '#2563eb', '#1e3a8a', '#60a5fa', '#93c5fd'];
+                
+                for (let i = 0; i < 100; i++) {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti';
+                    confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                    confetti.style.left = Math.random() * 100 + 'vw';
+                    confetti.style.top = '-10px';
+                    confetti.style.width = Math.random() * 10 + 5 + 'px';
+                    confetti.style.height = Math.random() * 10 + 5 + 'px';
+                    
+                    document.body.appendChild(confetti);
+                    
+                    const animation = confetti.animate(
+                        [
+                            { transform: 'translate(0, 0) rotate(0deg)', opacity: 1 },
+                            { transform: `translate(${Math.random() * 100 - 50}px, ${Math.random() * 500 + 500}px) rotate(${Math.random() * 360}deg)`, opacity: 0 }
+                        ],
+                        {
+                            duration: Math.random() * 3000 + 2000,
+                            easing: 'cubic-bezier(0.1, 0.8, 0.3, 1)'
+                        }
+                    );
+                    
+                    animation.onfinish = () => {
+                        confetti.remove();
+                    };
+                }
+            }
+        });
+    </script>
+</body>
+</html>
